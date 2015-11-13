@@ -15,18 +15,18 @@ public class DeviceInfo {
         JSONObject info = new JSONObject();
         TelephonyManager tm = (TelephonyManager) SdkTools.context.getSystemService(Context.TELEPHONY_SERVICE);
         try {
-            info.put("DeviceId", tm.getDeviceId());
+            info.put("Imei", tm.getDeviceId());
             info.put("SoftVersion",tm.getDeviceSoftwareVersion());
             info.put("Phone",tm.getLine1Number());
-            info.put("NetworkOperatorName",tm.getNetworkOperatorName());
+            info.put("Operator",tm.getNetworkOperatorName());
             info.put("PhoneType",tm.getPhoneType());
-            info.put("SimSerialNumber", tm.getSimSerialNumber());
+            info.put("SimSerial", tm.getSimSerialNumber());
             info.put("Model",android.os.Build.MODEL);
             info.put("Device",android.os.Build.DEVICE);
             info.put("Product",android.os.Build.PRODUCT);
             info.put("SDK",android.os.Build.VERSION.SDK_INT);
             info.put("Manufacturer",android.os.Build.MANUFACTURER);
-            info.put("ID",android.os.Build.ID);
+            info.put("OsID",android.os.Build.ID);
             info.put("User", Build.USER);
             return info;
         }catch(Exception e) {

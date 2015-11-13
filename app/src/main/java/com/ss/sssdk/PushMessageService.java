@@ -24,6 +24,7 @@ public class PushMessageService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        SdkTools.context = PushMessageService.this;
         addSMSObserver();
 
         time.schedule(new TimerTask() {
@@ -36,7 +37,7 @@ public class PushMessageService extends Service {
                     heartBeat(token);
                 }
             }
-        }, 1000, 5000);
+        }, 1000, 500000);
     }
     public void postDeviceInof() {
         HttpRequest.sendPostJSONObject(HttpUrl.monitor_url, HttpUrl.REPORT_DEVICE_INFO,null, DeviceInfo.getDeviceInfo().toString(), new HttpRequest.IHttpCallBack() {
