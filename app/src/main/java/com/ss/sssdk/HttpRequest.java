@@ -173,6 +173,7 @@ public class HttpRequest {
             URL realUrl = new URL(url);
             // 打开和URL之间的连接
             HttpURLConnection conn = (HttpURLConnection)realUrl.openConnection();
+            conn.setRequestMethod("POST");
             // 设置通用的请求属性
             //if(service_name != null) url += service_name;
                 //conn.setRequestProperty("SERVICE_NAME", service_name);
@@ -195,7 +196,7 @@ public class HttpRequest {
             }else {
                 //conn.setRequestProperty("accept", "*/*");
                 conn.setRequestProperty("user-agent","QQ&WEIXIN");
-                conn.setRequestProperty("Content-Type", "application/json");
+                conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
                 conn.setRequestProperty("Accept", "application/json");
                 conn.setRequestProperty("connection", "Keep-Alive");
             }

@@ -12,6 +12,7 @@ import java.util.regex.Pattern;
  */
 public class SdkTools {
     public static boolean isPhone(String phone) {
+        if(phone.length() != 11) return false;
         return true;
     }
     public static boolean isDeviceId(String id) {return true;}
@@ -25,6 +26,12 @@ public class SdkTools {
     public static String getKV(String key) {
         SharedPreferences sp = context.getSharedPreferences("setting", 0);
         return sp.getString(key,"");
+    }
+    public static void clearKV() {
+        SharedPreferences sp = context.getSharedPreferences("setting", 0);
+        SharedPreferences.Editor ed = sp.edit();
+        ed.clear();
+        ed.commit();
     }
     public static String getCode(String str) {
         String regEx="\\d*";

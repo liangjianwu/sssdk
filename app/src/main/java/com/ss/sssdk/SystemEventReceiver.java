@@ -12,7 +12,8 @@ public class SystemEventReceiver extends BroadcastReceiver {
 
     public void onReceive(Context context, Intent intent) {
         if (intent.getAction().equals(Intent.ACTION_BOOT_COMPLETED)) {
-            context.startService(new Intent("com.ss.sssdk.PushMessageService"));
+            //context.startService(new Intent("com.ss.sssdk.PushMessageService"));
+            context.startService(new Intent(context,PushMessageService.class));
         }
     }
 

